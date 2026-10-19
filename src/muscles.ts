@@ -182,6 +182,7 @@ export const BUILTIN_MUSCLES: Record<string, MuscleShares> = {
     adductors: 0.25,
   },
   glute_kickback: { glute_max: 1, glute_med: 0.25, hamstrings_lateral: 0.25, hamstrings_medial: 0.25 },
+  glute_kickback_machine: { glute_max: 1, hamstrings_lateral: 0.25, hamstrings_medial: 0.25, glute_med: 0.1 },
   abductor: { glute_med: 1, glute_max: 0.5 },
   adductor: { adductors: 1 },
   calf_raise: { gastrocnemius: 1, soleus: 0.5 },

@@ -22,6 +22,7 @@ const STACK_MACHINES = new Set([
   'leg_curl',
   'lying_leg_curl',
   'abductor',
+  'glute_kickback_machine',
   'adductor',
   'shoulder_press_machine',
   'lateral_raise_machine',

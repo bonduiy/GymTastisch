@@ -765,6 +765,37 @@ export const TIPS: Record<string, ExerciseTips> = {
       avoid: ['Ins Hohlkreuz gehen, um das Bein höher zu bekommen', 'Schwung holen', 'Hüfte aufdrehen'],
     },
   },
+  glute_kickback_machine: {
+    src: FREE,
+    en: {
+      setup: [
+        'Stand on the platform with the chest against the pad and hands on the handles. Standing leg slightly bent.',
+        'Back of the working knee against the roller pad, knee bent at about 90°. Set the pad height so it sits just below the knee joint.',
+        'Set the start position so the hip is bent and the glute is stretched, without the lower back rounding.',
+      ],
+      how: [
+        'Push the pad back and up by straightening the hip, keeping the knee angle the same; hold briefly at the end.',
+        'Stop when the thigh is in line with the body, then return slowly into the stretch.',
+        'Hips stay square and the abs stay tense the whole time.',
+      ],
+      feel: 'Glute of the working leg; the back of the thigh helps a little.',
+      avoid: ['Arching the lower back to push further', 'Twisting the hip open', 'Letting the stack slam down between reps'],
+    },
+    de: {
+      setup: [
+        'Auf die Plattform stellen, Brust ans Polster, Hände an die Griffe. Standbein leicht gebeugt.',
+        'Kniekehle des Arbeitsbeins an die Rolle, Knie etwa 90° gebeugt. Rollenhöhe so einstellen, dass sie knapp unter dem Kniegelenk sitzt.',
+        'Startposition so einstellen, dass die Hüfte gebeugt und der Po gedehnt ist, ohne dass der untere Rücken rund wird.',
+      ],
+      how: [
+        'Rolle durch Strecken der Hüfte nach hinten oben drücken, der Kniewinkel bleibt gleich; am Ende kurz halten.',
+        'Aufhören, sobald der Oberschenkel in einer Linie mit dem Körper ist, dann langsam zurück in die Dehnung.',
+        'Hüfte bleibt gerade, der Bauch die ganze Zeit angespannt.',
+      ],
+      feel: 'Po des arbeitenden Beins; die Rückseite des Oberschenkels hilft etwas.',
+      avoid: ['Ins Hohlkreuz gehen, um weiter zu drücken', 'Hüfte aufdrehen', 'Gewichte zwischen den Wiederholungen aufknallen lassen'],
+    },
+  },
   calf_raise: {
     src: FREE,
     en: {

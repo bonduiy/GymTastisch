@@ -70,6 +70,7 @@ const BUILTINS: [string, MuscleGroup][] = [
   ['russian_twist', 'core'],
   ['stair_climber', 'cardio'],
   ['incline_walk', 'cardio'],
+  ['glute_kickback_machine', 'legs'],
 ]
 
 /** Adds any built-in exercises that are missing (first launch, or new ones in an update). */
