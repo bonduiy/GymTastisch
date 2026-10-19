@@ -13,7 +13,7 @@ A simple, free workout tracker that runs in the browser and installs on your pho
 - **Rest timer:** starts automatically after each set, keeps the screen on and plays a short beep over your music
 - **Motivation:** weekly goal ring and streak, feedback when a set beats last time, and a summary with highlights after every workout
 - **Statistics:** workouts per week, weekly volume, sets per muscle group, personal records and an optional body-weight log with trend chart
-- **68 illustrated exercises** with machine, cable and free-weight variants, quick filters (upper body, legs, core, cardio) and search, plus your own exercises with photos and notes
+- **69 illustrated exercises** with machine, cable and free-weight variants, quick filters (upper body, legs, core, cardio) and search, plus your own exercises with photos and notes
 - **Technique tips** for every built-in exercise: machine setup, execution, target muscles and common mistakes, based on NSCA and ACSM references; available from the exercise page and during a workout
 - **Progress** chart per exercise (estimated 1RM, top weight, volume) and a history of all workouts
 - **German and English**, dark and light mode

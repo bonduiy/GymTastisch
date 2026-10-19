@@ -765,6 +765,37 @@ export const TIPS: Record<string, ExerciseTips> = {
       avoid: ['Ins Hohlkreuz gehen, um das Bein höher zu bekommen', 'Schwung holen', 'Hüfte aufdrehen'],
     },
   },
+  glute_kickback_machine: {
+    src: FREE,
+    en: {
+      setup: [
+        'Chest or forearms on the pad, hands on the handles. Standing leg slightly bent.',
+        'Working foot flat on the footplate (or the pad behind the knee), knee bent at about 90° at the start.',
+        'Set the start position so the hip is bent and the glute is stretched, without the lower back rounding.',
+      ],
+      how: [
+        'Push the plate back and up by straightening the hip, as if pressing through the heel; hold briefly at the end.',
+        'Stop when the thigh is in line with the body, then return slowly into the stretch.',
+        'Hips stay square and the abs stay tense the whole time.',
+      ],
+      feel: 'Glute of the working leg; the back of the thigh helps a little.',
+      avoid: ['Arching the lower back to push further', 'Twisting the hip open', 'Letting the stack slam down between reps'],
+    },
+    de: {
+      setup: [
+        'Brust oder Unterarme aufs Polster, Hände an die Griffe. Standbein leicht gebeugt.',
+        'Arbeitsfuß flach auf die Fußplatte (oder das Polster hinter dem Knie), Knie zu Beginn etwa 90° gebeugt.',
+        'Startposition so einstellen, dass die Hüfte gebeugt und der Po gedehnt ist, ohne dass der untere Rücken rund wird.',
+      ],
+      how: [
+        'Platte durch Strecken der Hüfte nach hinten oben drücken, als würdest du über die Ferse schieben; am Ende kurz halten.',
+        'Aufhören, sobald der Oberschenkel in einer Linie mit dem Körper ist, dann langsam zurück in die Dehnung.',
+        'Hüfte bleibt gerade, der Bauch die ganze Zeit angespannt.',
+      ],
+      feel: 'Po des arbeitenden Beins; die Rückseite des Oberschenkels hilft etwas.',
+      avoid: ['Ins Hohlkreuz gehen, um weiter zu drücken', 'Hüfte aufdrehen', 'Gewichte zwischen den Wiederholungen aufknallen lassen'],
+    },
+  },
   calf_raise: {
     src: FREE,
     en: {
