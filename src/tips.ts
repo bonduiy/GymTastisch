@@ -769,12 +769,12 @@ export const TIPS: Record<string, ExerciseTips> = {
     src: FREE,
     en: {
       setup: [
-        'Chest or forearms on the pad, hands on the handles. Standing leg slightly bent.',
-        'Working foot flat on the footplate (or the pad behind the knee), knee bent at about 90° at the start.',
+        'Stand on the platform with the chest against the pad and hands on the handles. Standing leg slightly bent.',
+        'Back of the working knee against the roller pad, knee bent at about 90°. Set the pad height so it sits just below the knee joint.',
         'Set the start position so the hip is bent and the glute is stretched, without the lower back rounding.',
       ],
       how: [
-        'Push the plate back and up by straightening the hip, as if pressing through the heel; hold briefly at the end.',
+        'Push the pad back and up by straightening the hip, keeping the knee angle the same; hold briefly at the end.',
         'Stop when the thigh is in line with the body, then return slowly into the stretch.',
         'Hips stay square and the abs stay tense the whole time.',
       ],
@@ -783,12 +783,12 @@ export const TIPS: Record<string, ExerciseTips> = {
     },
     de: {
       setup: [
-        'Brust oder Unterarme aufs Polster, Hände an die Griffe. Standbein leicht gebeugt.',
-        'Arbeitsfuß flach auf die Fußplatte (oder das Polster hinter dem Knie), Knie zu Beginn etwa 90° gebeugt.',
+        'Auf die Plattform stellen, Brust ans Polster, Hände an die Griffe. Standbein leicht gebeugt.',
+        'Kniekehle des Arbeitsbeins an die Rolle, Knie etwa 90° gebeugt. Rollenhöhe so einstellen, dass sie knapp unter dem Kniegelenk sitzt.',
         'Startposition so einstellen, dass die Hüfte gebeugt und der Po gedehnt ist, ohne dass der untere Rücken rund wird.',
       ],
       how: [
-        'Platte durch Strecken der Hüfte nach hinten oben drücken, als würdest du über die Ferse schieben; am Ende kurz halten.',
+        'Rolle durch Strecken der Hüfte nach hinten oben drücken, der Kniewinkel bleibt gleich; am Ende kurz halten.',
         'Aufhören, sobald der Oberschenkel in einer Linie mit dem Körper ist, dann langsam zurück in die Dehnung.',
         'Hüfte bleibt gerade, der Bauch die ganze Zeit angespannt.',
       ],
