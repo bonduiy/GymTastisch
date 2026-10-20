@@ -9,7 +9,7 @@ import { UpdateBanner } from './components/UpdateBanner'
 import { WorkoutView } from './components/WorkoutView'
 import { requestPersistence } from './db'
 import { detectLang, I18nContext, makeT, type Key, type Lang } from './i18n'
-import { NavContext, type Tab } from './nav'
+import { NavContext, scrollToTop, type Tab } from './nav'
 import { seedExercises } from './seed'
 import { loadSettings, saveSettings, SettingsContext, type Settings } from './settings'
 
@@ -69,11 +69,11 @@ export default function App() {
       setTab: (t: Tab) => {
         setTabState(t)
         setDetail(undefined)
-        window.scrollTo(0, 0)
+        scrollToTop()
       },
       openExercise: (id: string) => {
         setDetail(id)
-        window.scrollTo(0, 0)
+        scrollToTop()
       },
     }),
     [tab],
@@ -89,26 +89,28 @@ export default function App() {
         <RestContext.Provider value={restCtx}>
           <NavContext.Provider value={nav}>
             <UpdateBanner />
-            <main className={rest ? 'with-rest' : ''}>
-              {ready && (
-                <>
-                  {/* Keep the workout mounted so typed values survive a quick look elsewhere. */}
-                  <div hidden={tab !== 'workout' || !!detail}>
-                    <WorkoutView />
-                  </div>
-                  {detail ? (
-                    <ExerciseDetail id={detail} onBack={() => setDetail(undefined)} />
-                  ) : (
-                    <>
-                      {tab === 'exercises' && <ExercisesView />}
-                      {tab === 'stats' && <StatsView />}
-                      {tab === 'history' && <HistoryView />}
-                      {tab === 'settings' && <SettingsView />}
-                    </>
-                  )}
-                </>
-              )}
-            </main>
+            <div className="scroller">
+              <main className={rest ? 'with-rest' : ''}>
+                {ready && (
+                  <>
+                    {/* Keep the workout mounted so typed values survive a quick look elsewhere. */}
+                    <div hidden={tab !== 'workout' || !!detail}>
+                      <WorkoutView />
+                    </div>
+                    {detail ? (
+                      <ExerciseDetail id={detail} onBack={() => setDetail(undefined)} />
+                    ) : (
+                      <>
+                        {tab === 'exercises' && <ExercisesView />}
+                        {tab === 'stats' && <StatsView />}
+                        {tab === 'history' && <HistoryView />}
+                        {tab === 'settings' && <SettingsView />}
+                      </>
+                    )}
+                  </>
+                )}
+              </main>
+            </div>
             <RestTimerBar />
             <nav className="tabbar">
               {TABS.map((x) => (

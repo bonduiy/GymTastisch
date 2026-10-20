@@ -13,7 +13,7 @@ import {
 } from '../db'
 import { setKeepAwake, unlockAudio } from '../device'
 import { useI18n } from '../i18n'
-import { useNav } from '../nav'
+import { scrollToTop, useNav } from '../nav'
 import { exerciseName } from '../seed'
 import { isBodyweight, judgeFirstSet, nextWeight, stepFor, usesProgression, type Verdict } from '../progression'
 import { formatWeight, fromUnit, offPoundGrid, snapToStep, toUnit, unitFor, type WeightUnit } from '../units'
@@ -76,7 +76,7 @@ export function WorkoutView() {
 
   const open = (id?: string) => {
     setFocusId(id)
-    window.scrollTo(0, 0)
+    scrollToTop()
   }
 
   if (focusId && workout.exerciseIds.includes(focusId)) {
@@ -103,7 +103,7 @@ export function WorkoutView() {
           .delete()
       })
       if (count) setSummaryId(workout.id)
-      window.scrollTo(0, 0)
+      scrollToTop()
     }
     stop()
   }
