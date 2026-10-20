@@ -100,6 +100,17 @@ h2 {
   margin: 24px 0 8px;
 }
 
+/* Pages scroll in their own fixed layer instead of the document. iOS WebKit
+   can leave fixed bars behind mid-screen while the document scrolls; with a
+   document that never scrolls, the tab bar and rest timer stay put. */
+.scroller {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 main {
   padding: calc(env(safe-area-inset-top) + 16px) 16px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 28px);
   max-width: 640px;

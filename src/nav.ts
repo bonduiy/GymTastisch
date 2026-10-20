@@ -9,3 +9,8 @@ export const NavContext = createContext<{
 }>({ tab: 'workout', setTab: () => {}, openExercise: () => {} })
 
 export const useNav = () => useContext(NavContext)
+
+/** Pages scroll inside `.scroller`, not the document (keeps fixed bars pinned on iOS). */
+export function scrollToTop() {
+  document.querySelector('.scroller')?.scrollTo(0, 0)
+}
