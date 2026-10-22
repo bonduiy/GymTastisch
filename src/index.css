@@ -1,3 +1,5 @@
+@import '@fontsource-variable/big-shoulders-display';
+
 /* ---------- Design tokens ---------- */
 :root {
   --bg: #0a0b0d;
@@ -20,9 +22,10 @@
   --radius-sm: 12px;
   --tabbar-h: 60px;
   --rest-h: 80px;
+  --font-display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
   color-scheme: dark;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-text: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: var(--font-text);
   font-size: 16px;
   line-height: 1.4;
   -webkit-text-size-adjust: 100%;
@@ -148,8 +151,6 @@ main.with-rest {
   gap: 5px;
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 
@@ -602,8 +603,6 @@ main.with-rest {
 .group-title {
   font-size: 13px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--muted);
   margin: 18px 4px 4px;
 }
@@ -768,8 +767,6 @@ main.with-rest {
 .stepper-label {
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--muted);
   padding-left: 4px;
 }
@@ -849,6 +846,151 @@ main.with-rest {
 }
 
 /* Progressive overload */
+/* Weight entry: kg and lb side by side, the equipment's unit highlighted. */
+.dual {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.dual-field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 0 6px;
+  min-width: 0;
+}
+
+.dual-field.on {
+  color: var(--text);
+  box-shadow: inset 0 0 0 1.5px var(--accent-ink);
+}
+
+.stepper-row .dual-field input {
+  flex: 0 1 auto;
+  width: 4ch;
+  field-sizing: content;
+  min-width: 1ch;
+  max-width: 100%;
+  align-self: stretch;
+  text-align: center;
+  font-size: 22px;
+  color: inherit;
+}
+
+.stepper-row .dual-field input:focus {
+  background: none;
+}
+
+.dual-unit {
+  font-size: 13px;
+  font-weight: 650;
+  margin-top: 6px;
+}
+
+.unit-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 4px;
+  font-size: 13px;
+}
+
+.unit-switch .muted {
+  margin-right: 2px;
+}
+
+.unit-switch button {
+  border: 1px solid var(--border);
+  background: none;
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.unit-switch button.on {
+  background: var(--surface-3);
+  border-color: transparent;
+  color: var(--text);
+}
+
+/* Progression: today's weight next to the one for the next workout. */
+.prog-compare {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.prog-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.prog-col.next {
+  text-align: right;
+}
+
+.prog-when {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.prog-num {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.prog-col.next .prog-num {
+  color: var(--text);
+}
+
+.prog-up .prog-col.next .prog-num,
+.prog-up .prog-arrow {
+  color: var(--accent-ink);
+}
+
+.prog-down .prog-arrow {
+  color: var(--danger);
+}
+
+.prog-alt {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.prog-note {
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.prog-note .icon {
+  margin-top: 2px;
+}
+
 .prog {
   border-radius: var(--radius);
   padding: 14px;
@@ -858,32 +1000,12 @@ main.with-rest {
   animation: pop 0.3s ease-out;
 }
 
-.prog p {
-  margin: 0;
-  font-weight: 600;
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.prog p .icon {
-  margin-top: 1px;
-}
-
 .prog-up {
   background: var(--accent-soft);
 }
 
-.prog-up p .icon {
-  color: var(--accent-ink);
-}
-
 .prog-down {
   background: var(--danger-soft);
-}
-
-.prog-down p .icon {
-  color: var(--danger);
 }
 
 .prog-keep {
@@ -932,8 +1054,6 @@ main.with-rest {
 .rest-label {
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--muted);
 }
 
@@ -2268,13 +2388,10 @@ select {
   padding: 0;
 }
 
-.day.planned:not(.on) {
-  box-shadow: inset 0 0 0 1.5px var(--accent-ink);
-  color: var(--accent-ink);
-}
-
-.day.planned.today:not(.on) {
-  background: var(--accent-soft);
+.day.rest {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--surface-3);
+  color: var(--muted);
 }
 
 .week-hint {
@@ -2282,34 +2399,70 @@ select {
   font-size: 13px;
 }
 
-.weekday-picker {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+/* ---------- Rotation ---------- */
+.rotation {
+  display: flex;
+  gap: 4px;
+  margin: 2px 0 2px;
 }
 
-.weekday-picker button {
-  height: 40px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  padding: 0;
+.rotation-seg {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface-3);
 }
 
-.weekday-picker button.on {
+.rotation-seg.past {
+  background: color-mix(in srgb, var(--accent-ink) 40%, var(--surface-3));
+}
+
+.rotation-seg.now {
+  background: var(--accent-ink);
+}
+
+.next-tag {
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 650;
+  vertical-align: 2px;
+}
+
+.play-dot.next {
   background: var(--accent);
-  border-color: var(--accent);
   color: var(--accent-text);
 }
 
-.weekday-tag {
-  margin-left: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent-ink);
+.group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.group-head .btn {
+  padding-right: 4px;
+}
+
+.row-tools {
+  display: flex;
+}
+
+.order-no {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.plan-start:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.pick-row.on {
+  background: var(--accent-soft);
 }
 
 /* ---------- Technique tips ---------- */
@@ -2482,4 +2635,117 @@ select {
   .reload-splash img {
     animation: none;
   }
+}
+
+/* ---------- Display type ----------
+   Headings and the numbers read mid-set use a condensed display face, like the
+   figures on a weight stack. Everything else stays in the system font. */
+h1,
+.setup h2,
+.next-title h2,
+.focus-q,
+.focus-title,
+.sheet-head h2,
+.stepper-row input,
+.prog-num,
+.rest-big,
+.stat-value,
+.stat-big,
+.weight-pill,
+.ring-text,
+.set-no {
+  font-family: var(--font-display);
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 0.95;
+}
+
+.workout-head h1 {
+  font-size: 36px;
+}
+
+.summary-body > h1 {
+  font-size: 44px;
+}
+
+.setup h2,
+.next-title h2 {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.focus-title {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.focus-q {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.sheet-head h2 {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.stepper-row input {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.focus .stepper-row input {
+  font-size: 38px;
+}
+
+.stepper-row .dual-field input {
+  font-size: 30px;
+}
+
+.prog-num {
+  font-size: 34px;
+}
+
+.weight-pill {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.ring-text {
+  font-size: 19px;
+}
+
+.stat-value {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.stat-big {
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.summary-stats .stat-big {
+  font-size: 30px;
+}
+
+.rest-big {
+  font-size: 40px;
+  font-weight: 800;
+}
+
+.set-no {
+  font-weight: 800;
+}
+
+.weight-pill-alt,
+.weight-pill-action {
+  font-family: var(--font-text);
 }

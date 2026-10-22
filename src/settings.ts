@@ -14,6 +14,8 @@ export interface Settings {
   weeklyGoal: number
   /** Set once the language was picked on the welcome screen. */
   langChosen: boolean
+  /** Bumped when a default changes for everyone, see loadSettings. */
+  version: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -21,11 +23,12 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultRest: 120,
   sound: true,
   keepAwake: true,
-  weightStep: 2.5,
+  weightStep: 1,
   repMin: 8,
   repMax: 12,
   weeklyGoal: 3,
   langChosen: false,
+  version: 2,
 }
 
 const KEY = 'gymtastisch.settings'
@@ -33,7 +36,12 @@ const KEY = 'gymtastisch.settings'
 export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
+    if (raw) {
+      const saved = JSON.parse(raw) as Partial<Settings>
+      // Version 2: the default weight step became 1 kg; the old default of 2.5 kg moves along.
+      if ((saved.version ?? 1) < 2 && saved.weightStep === 2.5) saved.weightStep = 1
+      return { ...DEFAULT_SETTINGS, ...saved, version: DEFAULT_SETTINGS.version }
+    }
   } catch {
     // storage unavailable or corrupt
   }

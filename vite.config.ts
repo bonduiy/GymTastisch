@@ -35,7 +35,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,jpg,webp}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,webp,woff2}'],
+        globIgnores: ['**/*vietnamese*'],
       },
     }),
   ],

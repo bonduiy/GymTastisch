@@ -14,9 +14,6 @@ export function judgeFirstSet(reps: number, repMin: number, repMax: number): Ver
   return 'keep'
 }
 
-/** Big lower-body lifts move in larger jumps. */
-const HEAVY_LOWER = new Set(['squat', 'deadlift', 'leg_press', 'romanian_deadlift', 'hip_thrust', 'hack_squat'])
-
 /** Built-in exercises done with body weight; extra load is optional. */
 const BODYWEIGHT = new Set([
   'push_up',
@@ -36,13 +33,11 @@ export const isBodyweight = (e: Exercise) => e.bodyweight ?? (!!e.builtin && BOD
 
 /**
  * Smallest weight change for this exercise, in its own unit: 10 lb (or its own
- * setting) for pound stacks, else its kg setting, 5 kg for big lower-body lifts,
- * or the global default.
+ * setting) for pound stacks, else its kg setting or the global default. Bigger
+ * lifts still progress in bigger jumps, since suggestions aim for about 5 %.
  */
 export const stepFor = (e: Exercise, defaultStep: number) =>
-  unitFor(e) === 'lb'
-    ? (e.weightStepLb ?? DEFAULT_LB_STEP)
-    : (e.weightStep ?? (e.builtin && HEAVY_LOWER.has(e.builtin) ? 5 : defaultStep))
+  unitFor(e) === 'lb' ? (e.weightStepLb ?? DEFAULT_LB_STEP) : (e.weightStep ?? defaultStep)
 
 /**
  * Change the load by about 5 %, within the commonly recommended 2–10 %
