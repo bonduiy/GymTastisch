@@ -1,11 +1,24 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { cardioMetric, isTimed, METRIC_INFO } from '../cardio'
-import type { Exercise, WorkoutSet } from '../db'
+import { db, type Exercise, type WorkoutSet } from '../db'
 import { useI18n, type Lang, type T } from '../i18n'
 import { isBodyweight } from '../progression'
 import { builtinImage } from '../seed'
-import { formatWeight, shownKg, stepAbove, stepBelow, stepInKg, toPoundGrid, unitFor, type WeightUnit } from '../units'
+import { useSettings } from '../settings'
+import {
+  DEFAULT_LB_STEP,
+  formatWeight,
+  fromUnit,
+  shownKg,
+  snapToStep,
+  stepAbove,
+  stepBelow,
+  toPoundGrid,
+  toUnit,
+  unitFor,
+  type WeightUnit,
+} from '../units'
 import { Icon } from './Icon'
 
 /**
@@ -67,15 +80,12 @@ export function Stepper({
   step,
   label,
   min = 0,
-  snap,
 }: {
   value: number
   onChange: (v: number) => void
   step: number
   label: string
   min?: number
-  /** − and + move to the next position on the step grid, like the pin on a weight stack. */
-  snap?: boolean
 }) {
   const { lang } = useI18n()
   const [text, setText] = useState(fmt(value, lang))
@@ -89,7 +99,7 @@ export function Stepper({
     <div className="stepper">
       <span className="stepper-label">{label}</span>
       <div className="stepper-row">
-        <button type="button" onClick={() => onChange(round(Math.max(min, snap ? stepBelow(value, step) : value - step)))} aria-label={`${label} −`}>
+        <button type="button" onClick={() => onChange(round(Math.max(min, value - step)))} aria-label={`${label} −`}>
           −
         </button>
         <input
@@ -100,7 +110,7 @@ export function Stepper({
           onFocus={(e) => e.target.select()}
           aria-label={label}
         />
-        <button type="button" onClick={() => onChange(round(snap ? stepAbove(value, step) : value + step))} aria-label={`${label} +`}>
+        <button type="button" onClick={() => onChange(round(value + step))} aria-label={`${label} +`}>
           +
         </button>
       </div>
@@ -109,8 +119,9 @@ export function Stepper({
 }
 
 /**
- * Weight entry in kg. For pound stacks, `step` is in lb and − / + move from pin
- * to pin (10 lb ≈ 4.5 kg), while the field still shows kg.
+ * Weight entry showing kg and lb side by side; either can be typed in. − and +
+ * follow the exercise's equipment: kg plates move by `step` kg, pound stacks
+ * from pin to pin (`step` in lb). Weights are always stored in kg.
  */
 export function WeightStepper({
   exercise,
@@ -125,15 +136,101 @@ export function WeightStepper({
   step: number
   label: string
 }) {
+  const { t, lang } = useI18n()
+  const { settings } = useSettings()
   const unit = exercise ? unitFor(exercise) : 'kg'
+  const kg = shownKg(value, unit)
+  const lb = toUnit(value, 'lb')
+  const move = (dir: 1 | -1) => {
+    if (unit === 'lb') onChange(fromUnit(dir > 0 ? stepAbove(lb, step) : stepBelow(lb, step), 'lb'))
+    else onChange(round(Math.max(0, dir > 0 ? stepAbove(value, step) : stepBelow(value, step))))
+  }
+  // Switching to pounds puts the weight on the nearest pin.
+  const switchUnit = async (u: WeightUnit) => {
+    if (!exercise || u === unit) return
+    await db.exercises.update(exercise.id, { unit: u })
+    if (u === 'lb') onChange(fromUnit(snapToStep(lb, exercise.weightStepLb ?? DEFAULT_LB_STEP), 'lb'))
+  }
   return (
-    <Stepper
-      label={`${label} (kg)`}
-      value={shownKg(value, unit)}
-      onChange={(v) => onChange(unit === 'lb' ? toPoundGrid(v) : v)}
-      step={stepInKg(step, unit)}
-      snap={unit === 'lb'}
-    />
+    <div className="stepper weight-stepper">
+      <span className="stepper-label">{label}</span>
+      <div className="stepper-row">
+        <button type="button" onClick={() => move(-1)} aria-label={`${label} −`}>
+          −
+        </button>
+        <div className="dual">
+          <UnitField
+            value={kg}
+            unit="kg"
+            active={unit === 'kg'}
+            label={label}
+            onCommit={(v) => onChange(unit === 'lb' ? toPoundGrid(v) : round(v))}
+          />
+          <UnitField
+            value={lb}
+            unit="lb"
+            active={unit === 'lb'}
+            label={label}
+            onCommit={(v) => onChange(fromUnit(v, 'lb'))}
+          />
+        </div>
+        <button type="button" onClick={() => move(1)} aria-label={`${label} +`}>
+          +
+        </button>
+      </div>
+      {exercise && (
+        <div className="unit-switch" role="group" aria-label={t('weightUnit')}>
+          <span className="muted">{t('stepsLabel')}</span>
+          {(['kg', 'lb'] as const).map((u) => (
+            <button
+              key={u}
+              type="button"
+              className={unit === u ? 'on' : ''}
+              aria-pressed={unit === u}
+              onClick={() => void switchUnit(u)}
+            >
+              {fmt(u === unit ? step : u === 'kg' ? (exercise.weightStep ?? settings.weightStep) : (exercise.weightStepLb ?? DEFAULT_LB_STEP), lang)} {u}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function UnitField({
+  value,
+  unit,
+  active,
+  label,
+  onCommit,
+}: {
+  value: number
+  unit: WeightUnit
+  active: boolean
+  label: string
+  onCommit: (v: number) => void
+}) {
+  const { lang } = useI18n()
+  const [text, setText] = useState(fmt(value, lang))
+  useEffect(() => setText(fmt(value, lang)), [value, lang])
+  const commit = (s: string) => {
+    const n = parseFloat(s.replace(',', '.'))
+    if (!Number.isNaN(n) && n >= 0) onCommit(n)
+    else setText(fmt(value, lang))
+  }
+  return (
+    <label className={`dual-field ${active ? 'on' : ''}`}>
+      <input
+        inputMode="decimal"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={(e) => commit(e.target.value)}
+        onFocus={(e) => e.target.select()}
+        aria-label={`${label} (${unit})`}
+      />
+      <span className="dual-unit">{unit}</span>
+    </label>
   )
 }
 

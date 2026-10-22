@@ -62,9 +62,6 @@ export const formatWeight = (kg: number, unit: WeightUnit, lang: 'de' | 'en') =>
   return `${lang === 'de' ? n.replace('.', ',') : n} kg`
 }
 
-/** Step size in kg, e.g. 10 lb ≈ 4.54 kg. */
-export const stepInKg = (step: number, unit: WeightUnit) => fromUnit(step, unit)
-
 /** A kg value close to a whole pound (from rounding) becomes that exact pound weight. */
 export const toPoundGrid = (kg: number) => {
   const lb = kg / KG_PER_LB

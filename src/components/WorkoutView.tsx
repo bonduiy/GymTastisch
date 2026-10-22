@@ -624,7 +624,7 @@ function CardioFocus({ workout, exerciseId, onBack, exercise }: FocusProps & { e
   )
 }
 
-/** Shown after the first set: keep the weight, or pick the new one for next time. */
+/** Shown after the first set: keep the weight, or set the new one for the next workout (never this one). */
 function ProgressionPrompt({
   verdict,
   reps,
@@ -645,6 +645,7 @@ function ProgressionPrompt({
   onDone: (next?: number) => void
 }) {
   const { t, lang } = useI18n()
+  const { settings } = useSettings()
   const unit: WeightUnit = unitFor(exercise)
   const w = (kg: number) => formatWeight(kg, unit, lang)
   const [value, setValue] = useState(next)
@@ -672,22 +673,37 @@ function ProgressionPrompt({
       </button>
     )
   }
+  const up = verdict === 'up'
   return (
-    <div className={`prog prog-${verdict}`}>
-      <p>
-        <Icon name={verdict === 'up' ? 'trendUp' : 'trendDown'} size={18} />
-        {t(verdict === 'up' ? 'progUp' : 'progDown', { reps })}
-      </p>
-      <WeightStepper exercise={exercise} label={t('workingWeight')} value={value} onChange={setValue} step={step} />
-      <div className="row">
-        <button className="btn primary small grow" onClick={() => onDone(value)}>
-          {t('applyWeight', { weight: w(value) })}
-        </button>
-        <button className="btn secondary small" onClick={() => onDone(weight)}>
-          {t('keepWeight', { weight: w(weight) })}
-        </button>
+    <Sheet title={t(up ? 'progUpTitle' : 'progDownTitle')} onClose={() => onDone(weight)}>
+      <p className="muted">{t(up ? 'progUpWhy' : 'progDownWhy', { reps, min: settings.repMin, max: settings.repMax })}</p>
+      <div className={`prog-compare prog-${verdict}`}>
+        <div className="prog-col">
+          <span className="prog-when">{t('progToday')}</span>
+          <strong className="prog-num">{w(weight)}</strong>
+          {unit === 'lb' && <span className="prog-alt">{fmt(toUnit(weight, 'lb'), lang)} lb</span>}
+        </div>
+        <span className="prog-arrow">
+          <Icon name={up ? 'trendUp' : 'trendDown'} size={22} />
+        </span>
+        <div className="prog-col next">
+          <span className="prog-when">{t('progNext')}</span>
+          <strong className="prog-num">{w(value)}</strong>
+          {unit === 'lb' && <span className="prog-alt">{fmt(toUnit(value, 'lb'), lang)} lb</span>}
+        </div>
       </div>
-    </div>
+      <p className="prog-note">
+        <Icon name="clock" size={16} />
+        {t('progStays', { weight: w(weight) })}
+      </p>
+      <WeightStepper exercise={exercise} label={t('progAdjust')} value={value} onChange={setValue} step={step} />
+      <button className="btn primary full big" onClick={() => onDone(value)}>
+        {t('applyNext', { weight: w(value) })}
+      </button>
+      <button className="btn ghost full" onClick={() => onDone(weight)}>
+        {t('keepWeight', { weight: w(weight) })}
+      </button>
+    </Sheet>
   )
 }
 
