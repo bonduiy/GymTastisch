@@ -2,8 +2,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { dayKey, db, MAX_PLANS, uid, type Plan, type Workout } from '../db'
 import { unlockAudio } from '../device'
-import { useI18n, type T } from '../i18n'
+import { useI18n } from '../i18n'
 import { exerciseName } from '../seed'
+import { nextInRotation, rotateFrom } from '../rotation'
 import { useSettings } from '../settings'
 import { DAY, weekStart, weekStreak, workoutsPerWeek } from '../weeks'
 import { ExercisePicker } from './ExercisePicker'
@@ -24,7 +25,7 @@ export async function startWorkout(plan?: Plan, day?: Date) {
   })
 }
 
-/** Start screen: guided setup on first use, then the next training day front and centre. */
+/** Start screen: guided setup on first use, then the next training day in the rotation front and centre. */
 export function StartScreen() {
   const { t, lang } = useI18n()
   const plans = useLiveQuery(() => db.plans.orderBy('order').toArray(), [])
@@ -38,19 +39,29 @@ export function StartScreen() {
         .toArray(),
     [],
   )
+  const restToday = useLiveQuery(async () => !!(await db.restdays.get(dayKey())), [])
   const [editing, setEditing] = useState<Plan | 'new'>()
-  if (!plans || !exercises || !done) return null
+  const [sorting, setSorting] = useState(false)
+  if (!plans || !exercises || !done || restToday === undefined) return null
 
   const byId = new Map(exercises.map((e) => [e.id, e]))
   const locale = lang === 'de' ? 'de-DE' : 'en-GB'
   const lastDone = new Map<string, number>()
   for (const w of done) if (w.planId && !lastDone.has(w.planId)) lastDone.set(w.planId, w.startedAt)
 
-  const { next, eyebrow } = pickNext(plans, done, locale, t)
+  const next = nextInRotation(plans, done)
+  const startOfToday = new Date().setHours(0, 0, 0, 0)
+  const trainedToday = done.some((w) => w.startedAt >= startOfToday)
+  const eyebrow = trainedToday ? t('nextAfterToday') : restToday ? t('nextAfterRest') : t('upNext')
 
   const when = (p: Plan) => {
     const d = lastDone.get(p.id)
     return d ? t('lastDone', { date: relativeDay(d, locale, t('today')) }) : t('neverDone')
+  }
+  const move = async (i: number, d: number) => {
+    const order = [...plans]
+    ;[order[i], order[i + d]] = [order[i + d], order[i]]
+    await db.plans.bulkPut(order.map((p, n) => ({ ...p, order: n })))
   }
   const editor = editing && (
     <PlanEditor
@@ -116,6 +127,7 @@ export function StartScreen() {
               <Icon name="pencil" size={20} />
             </button>
           </div>
+          {plans.length > 1 && <RotationTrack plans={plans} next={next} />}
           <p className="muted small">
             {(next.exerciseIds.length === 1 ? t('oneExercise') : t('nExercises', { n: next.exerciseIds.length }))} · {when(next)}
           </p>
@@ -134,19 +146,27 @@ export function StartScreen() {
         </section>
       )}
 
-      <h3 className="group-title">{t('yourDays')}</h3>
+      <div className="group-head">
+        <h3 className="group-title">{t('yourDays')}</h3>
+        {plans.length > 1 && (
+          <button className="btn ghost small" onClick={() => setSorting(!sorting)}>
+            {sorting ? t('done') : t('reorder')}
+          </button>
+        )}
+      </div>
+      {sorting && <p className="muted small">{t('rotationHint')}</p>}
       <ul className="list plan-list">
-        {plans.map((p) => (
+        {plans.map((p, i) => (
           <li key={p.id}>
             <div className="plan-row-main">
-              <button className="plan-start" onClick={() => void startWorkout(p)}>
-                <span className="play-dot">
-                  <Icon name="play" size={14} />
+              <button className="plan-start" disabled={sorting} onClick={() => void startWorkout(p)}>
+                <span className={`play-dot ${p === next ? 'next' : ''}`}>
+                  {sorting ? <span className="order-no">{i + 1}</span> : <Icon name="play" size={14} />}
                 </span>
                 <span className="grow plan-text">
                   <strong>
                     {p.name}
-                    {!!p.weekdays?.length && <span className="weekday-tag">{weekdayLabels(p.weekdays, lang)}</span>}
+                    {p === next && !sorting && <span className="next-tag">{t('upNext')}</span>}
                   </strong>
                   <span className="muted small clamp">
                     {p.exerciseIds.length
@@ -155,13 +175,29 @@ export function StartScreen() {
                   </span>
                 </span>
               </button>
-              <button className="icon-btn muted" onClick={() => setEditing(p)} aria-label={t('editDay')}>
-                <Icon name="pencil" size={18} />
-              </button>
+              {sorting ? (
+                <span className="row-tools">
+                  <button className="icon-btn" disabled={i === 0} onClick={() => void move(i, -1)} aria-label={t('moveUp')}>
+                    <Icon name="arrowUp" size={18} />
+                  </button>
+                  <button
+                    className="icon-btn"
+                    disabled={i === plans.length - 1}
+                    onClick={() => void move(i, 1)}
+                    aria-label={t('moveDown')}
+                  >
+                    <Icon name="arrowDown" size={18} />
+                  </button>
+                </span>
+              ) : (
+                <button className="icon-btn muted" onClick={() => setEditing(p)} aria-label={t('editDay')}>
+                  <Icon name="pencil" size={18} />
+                </button>
+              )}
             </div>
           </li>
         ))}
-        {plans.length < MAX_PLANS && (
+        {plans.length < MAX_PLANS && !sorting && (
           <li>
             <button className="list-item add-row" onClick={() => setEditing('new')}>
               <span className="play-dot ghost">
@@ -182,13 +218,35 @@ export function StartScreen() {
   )
 }
 
-/** Weekly goal ring, trained days of this week and the week streak. With `plans`, past days can be logged. */
+/** Where the next training day sits in the rotation: one segment per day. */
+function RotationTrack({ plans, next }: { plans: Plan[]; next: Plan }) {
+  const { t } = useI18n()
+  const at = plans.indexOf(next)
+  return (
+    <div className="rotation" role="img" aria-label={t('rotationPos', { n: at + 1, total: plans.length })}>
+      {plans.map((p, i) => (
+        <span key={p.id} className={`rotation-seg ${i < at ? 'past' : ''} ${i === at ? 'now' : ''}`} />
+      ))}
+    </div>
+  )
+}
+
+/** Weekly goal ring, trained and rest days of this week and the week streak. With `plans`, days can be filled in. */
 export function WeekCard({ workouts, plans }: { workouts: Workout[]; plans?: Plan[] }) {
   const { t, lang } = useI18n()
   const { settings } = useSettings()
   const [logDay, setLogDay] = useState<number>()
   const now = Date.now()
   const monday = weekStart(now)
+  const dayDate = (i: number) => new Date(monday + i * DAY + DAY / 2)
+  const restDays = useLiveQuery(
+    () =>
+      db.restdays
+        .where('date')
+        .between(dayKey(dayDate(0)), dayKey(dayDate(6)), true, true)
+        .toArray(),
+    [monday],
+  )
   const perWeek = workoutsPerWeek(workouts)
   const doneCount = perWeek.get(monday) ?? 0
   const streak = weekStreak(perWeek, now)
@@ -197,12 +255,14 @@ export function WeekCard({ workouts, plans }: { workouts: Workout[]; plans?: Pla
   const weekdayOf = (ts: number) => (new Date(ts).getDay() + 6) % 7
   const thisWeek = workouts.filter((w) => w.startedAt >= monday)
   const trainedDays = new Set(thisWeek.map((w) => weekdayOf(w.startedAt)))
-  const planned = new Set(plans?.flatMap((p) => p.weekdays ?? []))
+  const rested = new Set(
+    (restDays ?? []).map((r) => Array.from({ length: 7 }, (_, i) => i).find((i) => dayKey(dayDate(i)) === r.date)),
+  )
   const todayIdx = weekdayOf(now)
   const locale = lang === 'de' ? 'de-DE' : 'en-GB'
-  const dayDate = (i: number) => new Date(monday + i * DAY + DAY / 2)
   const dayNames = Array.from({ length: 7 }, (_, i) => dayDate(i).toLocaleDateString(locale, { weekday: 'narrow' }))
-  const canLog = !!plans && Array.from({ length: todayIdx }, (_, i) => i).some((i) => !trainedDays.has(i))
+  const canLog =
+    !!plans && Array.from({ length: todayIdx }, (_, i) => i).some((i) => !trainedDays.has(i) && !rested.has(i))
   const R = 26
   const C = 2 * Math.PI * R
 
@@ -220,7 +280,7 @@ export function WeekCard({ workouts, plans }: { workouts: Workout[]; plans?: Pla
             strokeDashoffset={C * (1 - pct)}
             transform="rotate(-90 32 32)"
           />
-          <text x="32" y="37" textAnchor="middle" className="ring-text">
+          <text x="32" y="38" textAnchor="middle" className="ring-text">
             {doneCount}/{goal}
           </text>
         </svg>
@@ -236,19 +296,18 @@ export function WeekCard({ workouts, plans }: { workouts: Workout[]; plans?: Pla
       </div>
       <div className="week-days">
         {dayNames.map((d, i) => {
-          const cls = `day ${trainedDays.has(i) ? 'on' : ''} ${i === todayIdx ? 'today' : ''} ${planned.has(i) ? 'planned' : ''}`
-          const content = trainedDays.has(i) ? <Icon name="check" size={14} /> : d
+          const trained = trainedDays.has(i)
+          const rest = !trained && rested.has(i)
+          const cls = `day ${trained ? 'on' : ''} ${rest ? 'rest' : ''} ${i === todayIdx ? 'today' : ''}`
+          const content = trained ? <Icon name="check" size={14} /> : rest ? <Icon name="moon" size={14} /> : d
+          const name = dayDate(i).toLocaleDateString(locale, { weekday: 'long' })
+          const label = trained ? `${name}: ${t('trained')}` : rest ? `${name}: ${t('noWorkout')}` : name
           return plans && i <= todayIdx ? (
-            <button
-              key={i}
-              className={cls}
-              onClick={() => setLogDay(i)}
-              aria-label={dayDate(i).toLocaleDateString(locale)}
-            >
+            <button key={i} className={cls} onClick={() => setLogDay(i)} aria-label={label}>
               {content}
             </button>
           ) : (
-            <span key={i} className={cls}>
+            <span key={i} className={cls} aria-label={label}>
               {content}
             </span>
           )
@@ -259,6 +318,8 @@ export function WeekCard({ workouts, plans }: { workouts: Workout[]; plans?: Pla
         <LogPastSheet
           date={dayDate(logDay)}
           plans={plans}
+          workouts={workouts}
+          rest={rested.has(logDay)}
           existing={thisWeek.filter((w) => weekdayOf(w.startedAt) === logDay)}
           onClose={() => setLogDay(undefined)}
         />
@@ -267,15 +328,19 @@ export function WeekCard({ workouts, plans }: { workouts: Workout[]; plans?: Pla
   )
 }
 
-/** Track a workout for a day of this week, or set the day to no workout. One workout per day. */
+/** Track a workout for a day of this week, or mark it as rest day. One workout per day. */
 function LogPastSheet({
   date,
   plans,
+  workouts,
+  rest,
   existing,
   onClose,
 }: {
   date: Date
   plans: Plan[]
+  workouts: Workout[]
+  rest: boolean
   existing: Workout[]
   onClose: () => void
 }) {
@@ -285,8 +350,8 @@ function LogPastSheet({
     day: 'numeric',
     month: 'long',
   })
-  const weekday = (date.getDay() + 6) % 7
-  const isToday = dayKey(date) === dayKey()
+  const key = dayKey(date)
+  const isToday = key === dayKey()
   const tracked = existing.filter((w) => !w.logged)
   const logged = existing.filter((w) => w.logged)
   const current = logged.find((w) => w.planId) ?? logged[0]
@@ -294,18 +359,37 @@ function LogPastSheet({
     await startWorkout(plan, isToday ? undefined : date)
     onClose()
   }
-  const clear = () => db.workouts.bulkDelete(logged.map((w) => w.id)).then(onClose)
-  // Days planned for this weekday first.
-  const ordered = [...plans].sort(
-    (a, b) => Number(!!b.weekdays?.includes(weekday)) - Number(!!a.weekdays?.includes(weekday)),
-  )
-  const option = (key: string, name: string, onClick: () => void, on: boolean) => (
-    <li key={key}>
-      <button className="list-item" aria-pressed={on} onClick={onClick}>
+  // A rest day replaces anything logged for the day; picking it again clears it.
+  const toggleRest = async () => {
+    await db.transaction('rw', db.workouts, db.restdays, async () => {
+      if (rest) return db.restdays.delete(key)
+      await db.workouts.bulkDelete(logged.map((w) => w.id))
+      await db.restdays.put({ date: key, createdAt: Date.now() })
+    })
+    onClose()
+  }
+  // The day that was due on this date comes first, then the rest of the rotation.
+  const due = nextInRotation(plans, workouts, new Date(date).setHours(0, 0, 0, 0))
+  const ordered = rotateFrom(plans, due)
+  const option = (
+    k: string,
+    name: string,
+    onClick: () => void,
+    on: boolean,
+    opts: { icon?: 'moon'; note?: string; tag?: string } = {},
+  ) => (
+    <li key={k}>
+      <button className={`list-item pick-row ${on ? 'on' : ''}`} aria-pressed={on} onClick={onClick}>
         <span className={`play-dot ${on ? '' : 'ghost'}`}>
-          <Icon name="check" size={16} />
+          <Icon name={on ? 'check' : (opts.icon ?? 'play')} size={on ? 16 : 14} />
         </span>
-        <span className="grow">{name}</span>
+        <span className="grow min0">
+          <span className="block">
+            {name}
+            {opts.tag && <span className="next-tag">{opts.tag}</span>}
+          </span>
+          {opts.note && <span className="muted small block">{opts.note}</span>}
+        </span>
       </button>
     </li>
   )
@@ -319,7 +403,7 @@ function LogPastSheet({
 
   if (tracked.length > 0)
     return (
-      <Sheet title={t('logPastTitle', { day: label })} onClose={onClose}>
+      <Sheet title={label} onClose={onClose}>
         <p className="muted small">{t('dayTracked')}</p>
         <ul className="list">
           {tracked.map((w) => (
@@ -338,12 +422,18 @@ function LogPastSheet({
     )
 
   return (
-    <Sheet title={t('logPastTitle', { day: label })} onClose={onClose}>
-      <p className="muted small">{t('logPastHint')}</p>
+    <Sheet title={label} onClose={onClose}>
+      <p className="muted small">{t(isToday ? 'pickTodayHint' : 'logPastHint')}</p>
       <ul className="list">
-        {ordered.map((p) => option(p.id, p.name, () => void track(p), !!current && current.planId === p.id))}
+        {ordered.map((p) =>
+          option(p.id, p.name, () => void track(p), !!current && current.planId === p.id, {
+            tag: p === due && !current && !rest ? t('dueTag') : undefined,
+          }),
+        )}
         {option('free', t('freeWorkout'), () => void track(), !!current && !current.planId)}
-        {option('none', t('noWorkout'), () => void clear(), !current)}
+      </ul>
+      <ul className="list">
+        {option('rest', t('noWorkout'), () => void toggleRest(), rest, { icon: 'moon', note: t('restDayNote') })}
       </ul>
     </Sheet>
   )
@@ -372,39 +462,6 @@ function RecentWorkouts() {
   )
 }
 
-const weekdayLabels = (days: number[], lang: string) =>
-  days
-    .map((i) =>
-      new Date(2024, 0, 1 + i)
-        .toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { weekday: 'short' })
-        .replace('.', ''),
-    )
-    .join(' · ')
-
-/**
- * Which training day to suggest. With weekdays set: today's day if not trained yet,
- * otherwise the next scheduled one. Without: the day after the last one trained.
- */
-function pickNext(plans: Plan[], done: Workout[], locale: string, t: T) {
-  const today = new Date()
-  const todayIdx = (today.getDay() + 6) % 7
-  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
-  const trainedToday = done.some((w) => w.startedAt >= startOfToday)
-  if (plans.some((p) => p.weekdays?.length)) {
-    const todayPlan = plans.find((p) => p.weekdays?.includes(todayIdx))
-    if (todayPlan && !trainedToday) return { next: todayPlan, eyebrow: t('todayPlan') }
-    for (let d = 1; d <= 7; d++) {
-      const p = plans.find((x) => x.weekdays?.includes((todayIdx + d) % 7))
-      if (p) {
-        const day = new Date(startOfToday + d * DAY + DAY / 2).toLocaleDateString(locale, { weekday: 'long' })
-        return { next: p, eyebrow: todayPlan ? `${t('upNext')} · ${day}` : t('restDay', { day }) }
-      }
-    }
-  }
-  const lastPlanIdx = plans.findIndex((p) => p.id === done.find((w) => w.planId)?.planId)
-  return { next: plans.length ? plans[(lastPlanIdx + 1) % plans.length] : undefined, eyebrow: t('upNext') }
-}
-
 function relativeDay(ts: number, locale: string, today: string) {
   const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
   const days = Math.round((startOf(new Date()) - startOf(new Date(ts))) / 86_400_000)
@@ -417,10 +474,9 @@ function relativeDay(ts: number, locale: string, today: string) {
 }
 
 function PlanEditor({ plan, count, onClose }: { plan?: Plan; count: number; onClose: () => void }) {
-  const { t, lang } = useI18n()
+  const { t } = useI18n()
   const [name, setName] = useState(plan?.name ?? '')
   const [ids, setIds] = useState<string[]>(plan?.exerciseIds ?? [])
-  const [weekdays, setWeekdays] = useState<number[]>(plan?.weekdays ?? [])
   const [picking, setPicking] = useState(false)
   const exercises = useLiveQuery(() => db.exercises.bulkGet(ids), [ids])
 
@@ -434,7 +490,6 @@ function PlanEditor({ plan, count, onClose }: { plan?: Plan; count: number; onCl
     const data = {
       name: name.trim() || t('dayN', { n: count + (plan ? 0 : 1) }),
       exerciseIds: ids,
-      weekdays: [...weekdays].sort(),
     }
     if (plan) await db.plans.update(plan.id, data)
     else await db.plans.add({ id: uid(), order: Date.now(), ...data })
@@ -454,25 +509,6 @@ function PlanEditor({ plan, count, onClose }: { plan?: Plan; count: number; onCl
           {t('dayName')}
           <input value={name} placeholder={t('dayNamePlaceholder')} onChange={(e) => setName(e.target.value)} />
         </label>
-        <div className="field">
-          <span>{t('weekdays')}</span>
-          <div className="weekday-picker">
-            {Array.from({ length: 7 }, (_, i) => (
-              <button
-                key={i}
-                type="button"
-                className={weekdays.includes(i) ? 'on' : ''}
-                aria-pressed={weekdays.includes(i)}
-                onClick={() => setWeekdays(weekdays.includes(i) ? weekdays.filter((x) => x !== i) : [...weekdays, i])}
-              >
-                {new Date(2024, 0, 1 + i)
-                  .toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { weekday: 'short' })
-                  .replace('.', '')}
-              </button>
-            ))}
-          </div>
-          <small className="muted">{t('weekdaysHint')}</small>
-        </div>
         <div className="field">
           <span>{t('tabExercises')}</span>
           {!ids.length && <p className="muted small">{t('noExercisesYet')}</p>}

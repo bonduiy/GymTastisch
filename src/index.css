@@ -2268,13 +2268,10 @@ select {
   padding: 0;
 }
 
-.day.planned:not(.on) {
-  box-shadow: inset 0 0 0 1.5px var(--accent-ink);
-  color: var(--accent-ink);
-}
-
-.day.planned.today:not(.on) {
-  background: var(--accent-soft);
+.day.rest {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--surface-3);
+  color: var(--muted);
 }
 
 .week-hint {
@@ -2282,34 +2279,70 @@ select {
   font-size: 13px;
 }
 
-.weekday-picker {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+/* ---------- Rotation ---------- */
+.rotation {
+  display: flex;
+  gap: 4px;
+  margin: 2px 0 2px;
 }
 
-.weekday-picker button {
-  height: 40px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  padding: 0;
+.rotation-seg {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface-3);
 }
 
-.weekday-picker button.on {
+.rotation-seg.past {
+  background: color-mix(in srgb, var(--accent-ink) 40%, var(--surface-3));
+}
+
+.rotation-seg.now {
+  background: var(--accent-ink);
+}
+
+.next-tag {
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 650;
+  vertical-align: 2px;
+}
+
+.play-dot.next {
   background: var(--accent);
-  border-color: var(--accent);
   color: var(--accent-text);
 }
 
-.weekday-tag {
-  margin-left: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent-ink);
+.group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.group-head .btn {
+  padding-right: 4px;
+}
+
+.row-tools {
+  display: flex;
+}
+
+.order-no {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.plan-start:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.pick-row.on {
+  background: var(--accent-soft);
 }
 
 /* ---------- Technique tips ---------- */

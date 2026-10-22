@@ -65,14 +65,12 @@ export interface Workout {
   note?: string
 }
 
-/** A training day, e.g. "Monday · Day 1", with a fixed list of exercises. */
+/** A training day, e.g. "Day 1" or "Push", with a fixed list of exercises. Days are trained in rotation by `order`. */
 export interface Plan {
   id: string
   name: string
   order: number
   exerciseIds: string[]
-  /** Weekdays this day is usually trained on, 0 = Monday. */
-  weekdays?: number[]
 }
 
 export const MAX_PLANS = 7
@@ -90,6 +88,13 @@ export interface WorkoutSet {
   createdAt: number
 }
 
+/** A day marked as rest day, so the week shows it as settled. Never counts as a workout. */
+export interface RestDay {
+  /** Local calendar day, YYYY-MM-DD. */
+  date: string
+  createdAt: number
+}
+
 /** Optional morning body weight, one entry per day. */
 export interface BodyWeight {
   /** Local calendar day, YYYY-MM-DD. */
@@ -104,6 +109,7 @@ export const db = new Dexie('gymtastisch') as Dexie & {
   sets: EntityTable<WorkoutSet, 'id'>
   plans: EntityTable<Plan, 'id'>
   bodyweights: EntityTable<BodyWeight, 'date'>
+  restdays: EntityTable<RestDay, 'date'>
 }
 
 db.version(1).stores({
@@ -127,6 +133,18 @@ db.version(4)
     const workouts = await tx.table<Workout, string>('workouts').toArray()
     await tx.table('workouts').bulkDelete(redundantLogged(workouts))
   })
+
+// Training days follow a rotation instead of fixed weekdays; rest days get their own table.
+db.version(5)
+  .stores({ restdays: 'date' })
+  .upgrade((tx) =>
+    tx
+      .table('plans')
+      .toCollection()
+      .modify((p: Plan & { weekdays?: number[] }) => {
+        delete p.weekdays
+      }),
+  )
 
 /** Local calendar day as YYYY-MM-DD. */
 export const dayKey = (d = new Date()) =>

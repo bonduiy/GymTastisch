@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { cardioMetric, isTimed, METRIC_INFO } from '../cardio'
 import type { Exercise, WorkoutSet } from '../db'
 import { useI18n, type Lang, type T } from '../i18n'
@@ -7,7 +8,10 @@ import { builtinImage } from '../seed'
 import { formatWeight, shownKg, stepAbove, stepBelow, stepInKg, toPoundGrid, unitFor, type WeightUnit } from '../units'
 import { Icon } from './Icon'
 
-/** Bottom sheet; with `full` it covers the whole screen. */
+/**
+ * Bottom sheet; with `full` it covers the whole screen. Rendered into <body> so
+ * it sits above the tab bar instead of inside the page's scroll layer.
+ */
 export function Sheet({
   title,
   onClose,
@@ -19,14 +23,17 @@ export function Sheet({
   children: ReactNode
   full?: boolean
 }) {
+  // The page behind stays put while the sheet is open.
   useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const page = document.querySelector<HTMLElement>('.scroller')
+    if (!page) return
+    const prev = page.style.overflow
+    page.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = prev
+      page.style.overflow = prev
     }
   }, [])
-  return (
+  return createPortal(
     <div className={`sheet-backdrop ${full ? 'full' : ''}`} onClick={onClose}>
       <div className="sheet" role="dialog" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-head">
@@ -37,7 +44,8 @@ export function Sheet({
         </div>
         <div className="sheet-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

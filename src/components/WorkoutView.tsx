@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect, useRef, useState } from 'react'
 import {
   activeWorkout,
+  dayKey,
   db,
   estimate1RM,
   lastSessionSets,
@@ -90,9 +91,10 @@ export function WorkoutView() {
       await db.workouts.delete(workout.id)
     } else {
       if (!confirm(t('finishConfirm'))) return
-      await db.transaction('rw', db.workouts, async () => {
+      await db.transaction('rw', db.workouts, db.restdays, async () => {
         await db.workouts.update(workout.id, { endedAt: workoutNow(workout) })
-        // One workout per day: it replaces an entry logged for the same day.
+        // One workout per day: it replaces an entry logged for the same day, or a rest day.
+        await db.restdays.delete(dayKey(new Date(workout.startedAt)))
         const day = new Date(workout.startedAt)
         const from = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime()
         const to = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime()
