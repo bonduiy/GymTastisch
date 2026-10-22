@@ -1,3 +1,5 @@
+@import '@fontsource-variable/big-shoulders-display';
+
 /* ---------- Design tokens ---------- */
 :root {
   --bg: #0a0b0d;
@@ -20,9 +22,10 @@
   --radius-sm: 12px;
   --tabbar-h: 60px;
   --rest-h: 80px;
+  --font-display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
   color-scheme: dark;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-text: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: var(--font-text);
   font-size: 16px;
   line-height: 1.4;
   -webkit-text-size-adjust: 100%;
@@ -148,8 +151,6 @@ main.with-rest {
   gap: 5px;
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 
@@ -602,8 +603,6 @@ main.with-rest {
 .group-title {
   font-size: 13px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--muted);
   margin: 18px 4px 4px;
 }
@@ -768,8 +767,6 @@ main.with-rest {
 .stepper-label {
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--muted);
   padding-left: 4px;
 }
@@ -878,12 +875,12 @@ main.with-rest {
 
 .stepper-row .dual-field input {
   flex: 0 1 auto;
-  width: 100%;
-  max-width: 5ch;
+  width: 4ch;
   field-sizing: content;
   min-width: 1ch;
+  max-width: 100%;
   align-self: stretch;
-  text-align: right;
+  text-align: center;
   font-size: 22px;
   color: inherit;
 }
@@ -1057,8 +1054,6 @@ main.with-rest {
 .rest-label {
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--muted);
 }
 
@@ -2640,4 +2635,117 @@ select {
   .reload-splash img {
     animation: none;
   }
+}
+
+/* ---------- Display type ----------
+   Headings and the numbers read mid-set use a condensed display face, like the
+   figures on a weight stack. Everything else stays in the system font. */
+h1,
+.setup h2,
+.next-title h2,
+.focus-q,
+.focus-title,
+.sheet-head h2,
+.stepper-row input,
+.prog-num,
+.rest-big,
+.stat-value,
+.stat-big,
+.weight-pill,
+.ring-text,
+.set-no {
+  font-family: var(--font-display);
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 0.95;
+}
+
+.workout-head h1 {
+  font-size: 36px;
+}
+
+.summary-body > h1 {
+  font-size: 44px;
+}
+
+.setup h2,
+.next-title h2 {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.focus-title {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.focus-q {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.sheet-head h2 {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.stepper-row input {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.focus .stepper-row input {
+  font-size: 38px;
+}
+
+.stepper-row .dual-field input {
+  font-size: 30px;
+}
+
+.prog-num {
+  font-size: 34px;
+}
+
+.weight-pill {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.ring-text {
+  font-size: 19px;
+}
+
+.stat-value {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.stat-big {
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.summary-stats .stat-big {
+  font-size: 30px;
+}
+
+.rest-big {
+  font-size: 40px;
+  font-weight: 800;
+}
+
+.set-no {
+  font-weight: 800;
+}
+
+.weight-pill-alt,
+.weight-pill-action {
+  font-family: var(--font-text);
 }

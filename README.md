@@ -5,10 +5,11 @@ A simple, free workout tracker that runs in the browser and installs on your pho
 ## Features
 
 - **Guided setup:** create your training days on first launch, then see which day is up next
-- **Training days:** save up to 7 days (e.g. "Monday · Day 1") with a fixed set of exercises and start them with one tap
+- **Training days in rotation:** save up to 7 days (e.g. "Day 1" or "Push") with a fixed set of exercises. They come up in your chosen order, whichever weekday you train, and any day can be started with one tap
+- **Week overview:** tap a day of the current week to add a workout afterwards or mark it as a rest day
 - **Progressive overload:** your first set decides the weight for next time, based on your target rep range (default 8–12). The suggested change is about 5 % of the load, rounded to the exercise's weight step
-- **Weight steps per exercise** to match plates or machine stacks, and bodyweight exercises with optional added weight
-- **Pound steps for machine stacks:** weights are always shown in kg, but machines whose stacks go up in pounds move one plate at a time (10 lb ≈ 4.5 kg, e.g. 9.1 → 13.6 kg), with the lb value shown next to it
+- **Weight steps per exercise** to match plates or machine stacks (1 kg by default), and bodyweight exercises with optional added weight
+- **kg and lb side by side:** the weight entry shows both units. Machines whose stacks go up in pounds move one plate at a time (10 lb ≈ 4.5 kg), and any exercise can be switched between kg plates and a lb stack right where the weight is set
 - **Quick logging:** weight × reps with +/− buttons, prefilled from last time
 - **Rest timer:** starts automatically after each set, keeps the screen on and plays a short beep over your music
 - **Motivation:** weekly goal ring and streak, feedback when a set beats last time, and a summary with highlights after every workout
