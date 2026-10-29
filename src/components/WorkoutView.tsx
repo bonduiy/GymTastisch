@@ -353,9 +353,12 @@ function StrengthFocus({ workout, exerciseId, onBack, exercise }: FocusProps & {
       : 0
     if (isFirst && progression && !newer) {
       // Only the first set decides the weight for next time.
+      // The suggestion is saved right away, so it holds even if the prompt is closed or the page is left.
       const verdict = judgeFirstSet(reps, settings.repMin, settings.repMax)
-      await db.exercises.update(exerciseId, { workingWeight: weight })
-      setSuggestion({ verdict, reps, weight, next: nextWeight(exercise, weight, verdict, settings.weightStep) })
+      const next = nextWeight(exercise, weight, verdict, settings.weightStep)
+      const adjusts = verdict !== 'keep' && !(bw && weight === 0)
+      await db.exercises.update(exerciseId, { workingWeight: adjusts ? next : weight })
+      setSuggestion({ verdict, reps, weight, next })
     }
     if (best > 0 && weight > 0 && estimate1RM(weight, reps) > best) {
       setPr(true)
@@ -624,7 +627,10 @@ function CardioFocus({ workout, exerciseId, onBack, exercise }: FocusProps & { e
   )
 }
 
-/** Shown after the first set: keep the weight, or set the new one for the next workout (never this one). */
+/**
+ * Shown after the first set. The suggested weight for the next workout (never this one) is already saved;
+ * closing the prompt keeps what it shows, only "keep" goes back to today's weight.
+ */
 function ProgressionPrompt({
   verdict,
   reps,
@@ -675,7 +681,7 @@ function ProgressionPrompt({
   }
   const up = verdict === 'up'
   return (
-    <Sheet title={t(up ? 'progUpTitle' : 'progDownTitle')} onClose={() => onDone(weight)}>
+    <Sheet title={t(up ? 'progUpTitle' : 'progDownTitle')} onClose={() => onDone(value)}>
       <p className="muted">{t(up ? 'progUpWhy' : 'progDownWhy', { reps, min: settings.repMin, max: settings.repMax })}</p>
       <div className={`prog-compare prog-${verdict}`}>
         <div className="prog-col">
