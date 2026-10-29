@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { createPortal } from 'react-dom'
 import { db, estimate1RM, type Exercise, type WorkoutSet } from '../db'
 import { useI18n } from '../i18n'
 import { exerciseName } from '../seed'
@@ -17,7 +18,10 @@ interface Highlight {
   set: WorkoutSet
 }
 
-/** Shown right after finishing a workout: what was achieved, framed positively. */
+/**
+ * Shown right after finishing a workout: what was achieved, framed positively.
+ * Rendered into <body> so it covers the tab bar instead of sitting under it.
+ */
 export function WorkoutComplete({ workoutId, onClose }: { workoutId: string; onClose: () => void }) {
   const { t, lang } = useI18n()
   const data = useLiveQuery(async () => {
@@ -84,7 +88,7 @@ export function WorkoutComplete({ workoutId, onClose }: { workoutId: string; onC
           ? t('volumeUp', { p: volUp })
           : t('consistency')
 
-  return (
+  return createPortal(
     <div className="summary" role="dialog" aria-label={title}>
       <div className="confetti" aria-hidden>
         {Array.from({ length: 28 }, (_, i) => (
@@ -151,6 +155,7 @@ export function WorkoutComplete({ workoutId, onClose }: { workoutId: string; onC
           {t('done')}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
